@@ -7,7 +7,7 @@
 # ============================================================
 
 // Telegram Bot API Token  
-define('API_KEY', " ");
+define('API_KEY', "");
 
 // Admin user ID (GET: https://t.me/userinfobot)
 $admin_user_id = ['759869599']; 
@@ -23,6 +23,7 @@ $connect->query("SET NAMES 'utf8'"); $connect->set_charset('utf8mb4');
 // users table
 $userTableQuery = "CREATE TABLE IF NOT EXISTS `users` (
     `user_id` BIGINT(48) NOT NULL PRIMARY KEY,
+    `lang` ENUM('ar','fa','en','not_set') NOT NULL DEFAULT 'not_set',
     `step` varchar(255) DEFAULT 'none',
     `data` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";

@@ -38,7 +38,7 @@ if(isset($update->message)){
     $chat_id            = $message->chat->id;
     $from_id            = $message->from->id;
     $tc                 = $message->chat->type;
-    $user               = mysqli_fetch_assoc(mysqli_query($connect,"SELECT * FROM `user` WHERE `id` = '$from_id' LIMIT 1"));
+    $user               = mysqli_fetch_assoc(mysqli_query($connect,"SELECT * FROM `users` WHERE `user_id` = '$from_id' LIMIT 1"));
 }elseif(isset($update->callback_query)){
     $callback_query     = $update->callback_query;
     $callback_query_id  = $callback_query->id;
@@ -46,6 +46,6 @@ if(isset($update->message)){
     $fromid             = $callback_query->from->id;
     $messageid          = $callback_query->message->message_id;
     $chatid             = $callback_query->message->chat->id;
-    $user               = mysqli_fetch_assoc(mysqli_query($connect,"SELECT * FROM `user` WHERE `id` = '$fromid' LIMIT 1"));
+    $user               = mysqli_fetch_assoc(mysqli_query($connect,"SELECT * FROM `users` WHERE `user_id` = '$fromid' LIMIT 1"));
 }
 
