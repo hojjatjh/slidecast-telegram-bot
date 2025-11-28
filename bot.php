@@ -107,10 +107,12 @@ if (in_array($from_id, $admin_user_id)) {
         'resize_keyboard'=>true,
     ]);
 }
+// admin menu
 $admin_menu = json_encode([
     'keyboard'=>[
-        
-        [['text'=>"Developer"]],
+        [['text'=>$lang->get('btn_admin_1')]],
+        [['text'=>$lang->get('btn_admin_2')], ['text'=>$lang->get('btn_admin_3')]],
+        [['text'=>"/start"]],
     ],
     'resize_keyboard'=>true,
 ]);
