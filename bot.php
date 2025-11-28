@@ -8,7 +8,6 @@ require_once 'func/lang.php';
 // Admin language selection
 if (in_array($from_id, $admin_user_id)){
     if($user['user_id'] != true or $user['lang'] == 'not_set'){
-        file_put_contents('d.txt', "user = {$user['user_id']} - lang: {$user['lang']}");
         if ($user['user_id'] != true){
             $connect->query("INSERT INTO `users` (`user_id` , `lang`) VALUES ('$from_id' , 'not_set')");
         }
@@ -71,6 +70,21 @@ elseif(strpos($data,"setlang|" ) !== false ){
             ]
         ])
     ]);
+
+    $home_change_lang = json_encode([
+        'keyboard'=>[
+            [['text'=>"Developer"]],
+            [['text'=>$lang_mg->get('open_admin_panel_btn')]],
+        ],
+        'resize_keyboard'=>true,
+    ]);
+
+    bot('sendmessage',[
+        'chat_id'=>$fromid,
+        'text'=>"{$lang_mg->get('start_message')}",
+        'reply_markup'=>$home_change_lang,
+    ]);
+
 }
 
 // Bot language management
@@ -95,6 +109,7 @@ if (in_array($from_id, $admin_user_id)) {
 }
 $admin_menu = json_encode([
     'keyboard'=>[
+        
         [['text'=>"Developer"]],
     ],
     'resize_keyboard'=>true,
@@ -103,11 +118,15 @@ $admin_menu = json_encode([
 
 //============================================ Bot logic
 if($text == "/start" && $tc == 'private'){
+    if(in_array($from_id, $admin_user_id)){
+        $connect->query("UPDATE `users` SET `step` = 'none' WHERE `user_id` = '$from_id' LIMIT 1");
+    }
     bot('sendmessage',[
         'chat_id'=>$from_id,
-        'text'=>"👋 Hello my dear friend!\nWelcome to SlideCastBot!\n\n❓ How can I help you today?\n➖➖➖➖➖➖➖➖➖\n👋 سلام دوست خوب من!\n  به ربات SlideCastBot خوش اومدی!  \n\n❓ چه کمکی می‌تونم بهت بکنم؟  ",
+        'text'=>"👋 Hello my dear friend!\nWelcome to SlideCastBot!\n\n❓ How can I help you today?\n────────────────────\n👋 سلام دوست خوب من!\nبه ربات SlideCastBot خوش اومدی!\n\n❓ چه کمکی می‌تونم بهت بکنم؟\n────────────────────\n👋 مرحباً صديقي العزيز!\nمرحباً بك في بوت SlideCastBot!\n\n❓ كيف يمكنني مساعدتك اليوم؟",
         'reply_markup'=>$home,
     ]);
+    exit;
 }
 
 elseif($text == 'Developer' && $tc == 'private'){
@@ -122,6 +141,8 @@ elseif($text == $lang->get('open_admin_panel_btn') and $tc == 'private' and in_a
     bot('sendmessage',[
         'chat_id'=>$from_id,
         'text'=>"{$lang->get('admin_welcome_to_menu')}",
-        'reply_markup'=>$home,
+        'reply_markup'=>$admin_menu,
     ]);
+    $connect->query("UPDATE `users` SET `step` = 'none' WHERE `user_id` = '$from_id' LIMIT 1");
+    exit;
 }
