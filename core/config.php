@@ -12,8 +12,6 @@ define('API_KEY', "");
 // Admin user ID (GET: https://t.me/userinfobot)
 $admin_user_id = ['759869599']; 
 
-
-
 //
 // MariaDB / MySQL Settings
 //
