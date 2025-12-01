@@ -6,9 +6,36 @@ require_once 'core/update.php';
 require_once 'func/lang.php';
 require_once 'func/functions.php';
 
-// Receive updates to perform updates
-$newData = file_get_contents("php://input");
-file_put_contents('data.txt', $newData . "\n----------------------\n", FILE_APPEND);
+function send_presentations_keyboard($chat_id, $from_id, $page = 1) {
+    global $connect;
+
+    $limit = 5;
+    $offset = ($page - 1) * $limit;
+
+    $total_query = mysqli_query($connect, "SELECT COUNT(*) as cnt FROM `presentation` WHERE `created_by` = '$from_id'");
+    $total_row = mysqli_fetch_assoc($total_query);
+    $total = $total_row['cnt'];
+    $total_pages = ceil($total / $limit);
+
+    $res = mysqli_query($connect, "SELECT * FROM `presentation` WHERE `created_by` = '$from_id' ORDER BY `created_at` DESC LIMIT $limit OFFSET $offset");
+
+    $keyboard = [];
+    while($row = mysqli_fetch_assoc($res)) {
+        $keyboard[] = [['text' => $row['title'], 'callback_data' => "edit|{$row['presentation_id']}"]];
+    }
+
+    // Pagination buttons
+    $pagination = [];
+    if($page > 1) $pagination[] = ['text'=>"⬅️", 'callback_data'=>"page|".($page-1)];
+    if($page < $total_pages) $pagination[] = ['text'=>"➡️", 'callback_data'=>"page|".($page+1)];
+    if($pagination) $keyboard[] = $pagination;
+
+    bot('sendMessage', [
+        'chat_id' => $chat_id,
+        'text' => "📑Presentation ($page/$total_pages)",
+        'reply_markup' => json_encode(['inline_keyboard' => $keyboard])
+    ]);
+}
 
 // Admin language selection
 if (in_array($from_id, $admin_user_id)){
@@ -116,7 +143,7 @@ if (in_array($from_id, $admin_user_id)) {
 $admin_menu = json_encode([
     'keyboard'=>[
         [['text'=>$lang->get('btn_admin_1')]],
-        [['text'=>$lang->get('btn_admin_2')], ['text'=>$lang->get('btn_admin_3')]],
+        [['text'=>$lang->get('btn_admin_3')]],
         [['text'=>"/start"]],
     ],
     'resize_keyboard'=>true,
@@ -158,6 +185,11 @@ elseif($text == $lang->get('open_admin_panel_btn') and $tc == 'private' and in_a
     ]);
     $connect->query("UPDATE `users` SET `step` = 'none' WHERE `user_id` = '$from_id' LIMIT 1");
     exit;
+}
+
+elseif ($text == $lang->get('btn_admin_3') and $tc == 'private' and in_array($from_id,$admin_user_id)) {
+    $page = 1;
+    send_presentations_keyboard($chat_id, $from_id, $page);
 }
 
 elseif($text == $lang->get('btn_admin_1') and $tc == 'private' and in_array($from_id,$admin_user_id)){
@@ -463,4 +495,57 @@ elseif (strpos($data,"c|" ) !== false){
             }
         }
     }
+}
+
+elseif(strpos($data, 'page|') !== false){
+    list(, $page) = explode('|', $data);
+     bot('deleteMessage', [
+        'chat_id'    => $chatid,      
+        'message_id' => $messageid
+    ]);
+    bot('editMessageText', [
+        'chat_id' => $chatid,
+        'message_id' => $messageid,
+        'text' => "📑Presentation ($page)",
+        'reply_markup' => json_encode(['inline_keyboard' => []])
+    ]);
+    send_presentations_keyboard($chatid, $fromid, $page);
+}
+
+elseif(strpos($data, 'edit|') !== false){
+    list(, $p_id) = explode('|', $data);
+    bot('editMessageText', [
+        'chat_id' => $chatid,
+        'message_id' => $messageid,
+        'text' => "{$lang->get('text_18')}",
+        'reply_markup' => json_encode([
+            'inline_keyboard' => [
+                [['text'=>"✅", 'callback_data'=>"delete|$p_id"]],
+                [['text'=>"❌", 'callback_data'=>"cancel"]]
+            ]
+        ])
+    ]);
+}
+
+elseif(strpos($data, 'delete|') !== false){
+    list(, $p_id) = explode('|', $data);
+    $pres = mysqli_fetch_assoc(mysqli_query($connect, "SELECT * FROM `presentation` WHERE `presentation_id` = '$p_id'"));
+    if($pres){
+        $connect->query("DELETE FROM `slides` WHERE `p_id` = '$p_id'");
+        $connect->query("DELETE FROM `presentation` WHERE `presentation_id` = '$p_id' LIMIT 1");
+        bot('editMessageText', [
+            'chat_id' => $chatid,
+            'message_id' => $messageid,
+            'text' => "✅"
+        ]);
+    }
+}
+
+elseif($data == 'cancel'){
+    bot('editMessageText', [
+        'chat_id' => $chatid,
+        'message_id' => $messageid,
+        'text' => "❌"
+    ]);
+    send_presentations_keyboard($chat_id, $from_id, 1);
 }

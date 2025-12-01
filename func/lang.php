@@ -36,6 +36,7 @@ class LangManager{
                 'text_15'                       => "✅ ارائه شما باموفقیت برای کانال مورد نظر ارسال شد\nیادت باشه هنگام ارائه استرس نداشته باشی رفیق من :)",
                 'text_16'                       => "ارائه مورد نظر یافت نشد",
                 'text_17'                       => "اسلاید بعدی یافت نشد",
+                'text_18'                       => "⚠️ آیا مطمئن هستید می‌خواهید این ارائه را حذف کنید؟",
             ],
             'en' => [
                 'open_admin_panel_btn'          => '⚙️ Admin Panel',
@@ -62,6 +63,7 @@ class LangManager{
                 'text_15'                       => "✅ Your presentation has been successfully sent to the desired channel.\nRemember, stay calm and don’t stress during the presentation, my friend :)",
                 'text_16'                       => "Requested presentation not found.",
                 'text_17'                       => "Next slide not found.",
+                'text_18'                       => "⚠️ Are you sure you want to delete this presentation?",
             ],
             'ar' => [
                 'open_admin_panel_btn'          => '⚙️ لوحة الإدارة',
@@ -88,7 +90,7 @@ class LangManager{
                 'text_15'                       => "✅ تم إرسال العرض التقديمي بنجاح إلى القناة المطلوبة.\nتذكر، لا تشعر بالتوتر أثناء العرض يا صديقي :)",
                 'text_16'                       => "لم يتم العثور على العرض المطلوب.",
                 'text_17'                       => "لم يتم العثور على الشريحة التالية.",
-
+                'text_18'                       => "⚠️ هل أنت متأكد أنك تريد حذف هذا العرض؟",
             ]
         ];
     }
