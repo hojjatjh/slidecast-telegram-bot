@@ -11,35 +11,47 @@ SlideCastBot allows administrators to upload slides, which are automatically for
 
 ## 🚀Features
 ⭐️ Presentation Management:
+
 - Create unlimited slide presentations
 - Automatic creation of beautiful inline slide navigation
 - Next / Previous buttons
 - Delete presentation
 - Multi‑presentation admin panel
 - Pagination support
+
 📤 Slide Upload System:
+
 - Upload slides one-by-one
 - Automatically numbered
 - Auto-save using MariaDB / MySQL
 - Supports Telegram file_id for instant loading
+
 🌐 Multi‑Language System :
+
 - Persian (FA)
 - English (EN)
 - Arabic (AR)
+
 🛡 Security :
+
 - Telegram IP validation
 - Admin whitelist
 - Input validation
 - Protected callback routing
+
 🔄 Fully Dynamic Message Editing :
+
 - Slides switch using editMessageMedia
 - Captions auto-update to display progress
 - Smart keyboard states: Start, Middle, End(with delete button)
+
 ⚡️ Additional Cool Features :
+
 - Auto-generated slugs
 - Beautiful inline UI
 - Metadata saving
 - Full logging of user steps
+
 ## 📦 Installation
 #### 1️⃣ Upload Bot Files
 Place all files on your server/host.
