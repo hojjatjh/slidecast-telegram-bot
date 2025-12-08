@@ -143,7 +143,7 @@ if (in_array($from_id, $admin_user_id)) {
 $admin_menu = json_encode([
     'keyboard'=>[
         [['text'=>$lang->get('btn_admin_1')]],
-        [['text'=>$lang->get('btn_admin_3')]],
+        [['text'=>$lang->get('text_19')],['text'=>$lang->get('btn_admin_3')]],
         [['text'=>"/start"]],
     ],
     'resize_keyboard'=>true,
@@ -200,6 +200,121 @@ elseif($text == $lang->get('btn_admin_1') and $tc == 'private' and in_array($fro
     ]);
     $connect->query("UPDATE `users` SET `step` = 'add_p_1' WHERE `user_id` = '$from_id' LIMIT 1");
     exit;
+}
+
+elseif($text == $lang->get('text_19') and $tc == 'private' and in_array($from_id,$admin_user_id)){
+    bot('sendmessage',[
+        'chat_id'       => $from_id,
+        'text'          => "{$lang->get('text_20')}",
+        'reply_markup'  => $back_btn,
+    ]);
+    $connect->query("UPDATE `users` SET `step` = 'send_again_p' WHERE `user_id` = '$from_id' LIMIT 1");
+    exit;
+}
+
+elseif ($user['step'] == 'send_again_p' && $text != $lang->get('btn_admin_1') && $tc == 'private') {
+    $user_text           = trim($text);
+    $slug                = make_slug($user_text);
+    $select_presentation = mysqli_fetch_assoc(mysqli_query($connect, "SELECT * FROM `presentation` WHERE `slug` = '$slug' AND `created_by` = '$from_id' LIMIT 1"));
+    $presentation_id     = $select_presentation['presentation_id'];
+
+    if ($select_presentation['presentation_id'] != true){
+        bot('sendmessage',[
+            'chat_id'      => $from_id,
+            'text'         => "{$lang->get('text_16')}",
+            'reply_markup' => $back_btn,
+        ]);
+        exit;
+    }
+
+    bot('sendmessage',[
+        'chat_id'      => $from_id,
+        'text'         => "{$lang->get('text_21')}",
+        'reply_markup' => $back_btn,
+    ]);
+
+    $connect->query("UPDATE `users` SET `data` = '$presentation_id' WHERE `user_id` = '$from_id' LIMIT 1");
+    $connect->query("UPDATE `users` SET `step` = 'send_again_p_2' WHERE `user_id` = '$from_id' LIMIT 1");
+}
+
+elseif ($user['step'] == 'send_again_p_2' && $text != $lang->get('btn_admin_1') && $tc == 'private') {
+    $user_text           = trim($text);
+    $user_data           = $user['data'];
+    $select_presentation = mysqli_fetch_assoc(mysqli_query($connect, "SELECT * FROM `presentation` WHERE `presentation_id` = '$user_data' AND `created_by` = '$from_id' LIMIT 1"));
+    $presentation_id     = $select_presentation['presentation_id'];
+    $presentation_ch     = $select_presentation['channel_id'];
+    $p_title             = $select_presentation['title'];
+    $slide_count         = $select_presentation['slide_count'];
+
+    if ($select_presentation['presentation_id'] != true){
+        bot('sendmessage',[
+            'chat_id'      => $from_id,
+            'text'         => "{$lang->get('text_16')}",
+            'reply_markup' => $back_btn,
+        ]);
+        exit;
+    }
+    
+    $select_first_slide = mysqli_fetch_assoc(mysqli_query($connect, "SELECT * FROM `slides` WHERE `p_id` = '$presentation_id' AND `slide_n` = '1' LIMIT 1"));
+
+    if ($user_text == 'skip' or $user_text == 'SKIP' or $user_text == 'Skip'){        
+        $id = bot('sendphoto',[
+            'chat_id'       => "-$presentation_ch",
+            'photo'         => $select_first_slide['file_id'],
+            'caption'       => "$p_title \n📑 (1/$slide_count)",
+            'reply_markup'  => json_encode([
+            'inline_keyboard'=>[
+                    [['text'=>"▶️",'callback_data'=>"n|$presentation_id|2"]],
+                    [['text'=>"🤝🤝",'url'=>"https://github.com/hojjatjh"]],
+                ]
+            ])
+        ])->result;
+
+        bot('sendmessage',[
+            'chat_id'      => $from_id,
+            'text'         => "✅",
+            'reply_markup' => $admin_menu,
+        ]);
+
+        $mesage_id_post = $id->message_id;
+        $connect->query("UPDATE `presentation` SET `message_id` = '$mesage_id_post' WHERE `presentation_id` = '$presentation_id' AND `created_by` = '$from_id' LIMIT 1");
+        $connect->query("UPDATE `users` SET `step` = 'none' WHERE `user_id` = '$from_id' LIMIT 1");
+        exit;
+    }
+
+    if(preg_match("/^[0-10-9]+$/", $user_text)) {
+        $id = bot('sendphoto',[
+            'chat_id'       => "-$user_text",
+            'photo'         => $select_first_slide['file_id'],
+            'caption'       => "$p_title \n📑 (1/$slide_count)",
+            'reply_markup'  => json_encode([
+            'inline_keyboard'=>[
+                    [['text'=>"▶️",'callback_data'=>"n|$presentation_id|2"]],
+                    [['text'=>"🤝🤝",'url'=>"https://github.com/hojjatjh"]],
+                ]
+            ])
+        ])->result;
+
+        bot('sendmessage',[
+            'chat_id'      => $from_id,
+            'text'         => "{$lang->get('text_22')}",
+            'reply_markup' => $admin_menu,
+        ]);
+
+        $mesage_id_post = $id->message_id;
+        
+        $connect->query("UPDATE `presentation` SET `message_id` = '$mesage_id_post' WHERE `presentation_id` = '$presentation_id' AND `created_by` = '$from_id' LIMIT 1");
+        $connect->query("UPDATE `presentation` SET `channel_id` = '$user_text' WHERE `presentation_id` = '$presentation_id' AND `created_by` = '$from_id' LIMIT 1");
+        $connect->query("UPDATE `users` SET `step` = 'none' WHERE `user_id` = '$from_id' LIMIT 1");
+        $connect->query("UPDATE `users` SET `data` = null WHERE `user_id` = '$from_id' LIMIT 1");
+    }else{
+        bot('sendmessage',[
+            'chat_id'      => $from_id,
+            'text'         => "{$lang->get('text_4')}",
+            'reply_markup' => $back_btn,
+        ]);
+        exit;
+    }
 }
 
 elseif ($user['step'] == 'add_p_1' && $text != $lang->get('btn_admin_1') && $tc == 'private') {

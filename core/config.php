@@ -3,7 +3,7 @@
 #  Project Name : SlideCastBot
 #  Description  : Telegram bot for slide-based presentations
 #  Developer    : Hojjat Jahānpour
-#  Version      : 1.0.0
+#  Version      : 1.1.0
 # ============================================================
 
 // Telegram Bot API Token  
